@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+</head>
+
+<body>
+    <h2>Welcome, {{ user }}!</h2>
+
+    {% if user == "admin" %}
+    <h3>Admin Options:</h3>
+    <ul>
+        <li><a href="/run_face_recognition">Start Face Recognition</a></li>
+        <li><a href="/collect_samples">Collect New Samples</a></li>
+        <li><a href="/train_model">Train Model</a></li>
+        <li><a href="/view_attendance">View Attendance</a></li>
+    </ul>
+    {% else %}
+    <h3>User Options:</h3>
+    <ul>
+        <li><a href="/run_face_recognition">Start Face Recognition</a></li>
+    </ul>
+    {% endif %}
+
+    <a href="/logout">Logout</a>
+</body>
+
+</html>
