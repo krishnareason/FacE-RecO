@@ -1,7 +1,7 @@
 import cv2
 import os
-import subprocess
 import sys
+sys.stdout.reconfigure(encoding='utf-8')
 
 print("🔍 Checking camera access...")
 cap = cv2.VideoCapture(0)  # Open the default camera
@@ -11,35 +11,23 @@ if not cap.isOpened():
     exit()
 
 print("✅ Camera detected! Starting sample collection...")
-######
-sys.stdout.reconfigure(encoding='utf-8')
-venv_path = os.path.join(os.getcwd(), ".venv", "Scripts", "python.exe")  # Windows
-if sys.executable != venv_path:
-    print("⚡ Switching to Virtual Environment...")
-    subprocess.call([venv_path] + sys.argv)
-    sys.exit()
 
-print(f"✅ Using Virtual Environment: {sys.executable}")
+# Ensure the script receives a name argument
+if len(sys.argv) < 2:
+    print("❌ Error: No name provided! Run the script with a name argument.")
+    sys.exit(1)
 
+person_name = sys.argv[1].strip()
 
 # Paths
 DATASET_PATH = "dataset"
-
-# Ensure dataset directory exists
-os.makedirs(DATASET_PATH, exist_ok=True)
-
-# Ask for the person's name (used for folder naming)
-person_name = input("Enter person's name: ").strip()
 person_path = os.path.join(DATASET_PATH, person_name)
 
-# Create directory if new, else append to existing
+# Ensure dataset directory exists
 os.makedirs(person_path, exist_ok=True)
 
 # Load Face Detector
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
-
-# Open Webcam
-cap = cv2.VideoCapture(0)
 
 print(f"📸 Collecting samples for {person_name}... Press 'q' to stop early.")
 sample_count = 0
@@ -79,5 +67,5 @@ cv2.destroyAllWindows()
 print(f"📁 {sample_count} samples saved in: {person_path}")
 
 print("📢 Training model with new data...")
-subprocess.run(["python", "train_model.py"])
+os.system("python train_model.py")
 print("✅ Training completed!")

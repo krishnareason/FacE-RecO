@@ -80,7 +80,8 @@ while True:
         break
 
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.2, minNeighbors=9, minSize=(60, 60))
+    gray = cv2.equalizeHist(gray)
+    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.2, minNeighbors=6, minSize=(50, 50))
 
     for (x, y, w, h) in faces:
         face_roi = gray[y:y+h, x:x+w]
@@ -91,7 +92,7 @@ while True:
 
         # Store predictions in the queue
         prev_predictions.append(confidence)
-        prev_names.append(label_map[label_id] if confidence < 90 else "New Person")
+        prev_names.append(label_map[label_id] if confidence <90 else "New Person")
 
         # Select the most frequently occurring name in the last few frames
         most_common_name = max(set(prev_names), key=prev_names.count)

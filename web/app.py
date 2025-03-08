@@ -52,26 +52,32 @@ def run_face_recognition():
         return redirect(url_for("login"))
 
     try:
-        subprocess.Popen(["python", "dev/face_recognition.py"], shell=True)
+        subprocess.Popen(["python", "face_recognition.py"], shell=True)
         return jsonify({"message": "🚀 Face Recognition Started!"})
     except Exception as e:
         return jsonify({"error": str(e)})
 
 # -------------------- (4) Collect New Samples (Fixed) --------------------
-@app.route("/collect_samples")
+@app.route("/collect_samples", methods=["POST"])
 def collect_samples():
     if "username" not in session:
         return redirect(url_for("login"))
 
-    try:
-        script_path = os.path.join(os.getcwd(), "dev", "collect_samples.py")
-        print(f"✅ Running script at: {script_path}")
+    person_name = request.form.get("name")  # Get name from form input
 
-        subprocess.run(["python", script_path], cwd=os.path.dirname(script_path))
-        return jsonify({"message": "📸 Collecting New Samples!"})
+    if not person_name:
+        return jsonify({"error": "❌ Name is required!"})
+
+    try:
+        script_path = os.path.join(os.getcwd(), "collect_samples.py")
+        print(f"✅ Running script at: {script_path} for {person_name}")
+
+        subprocess.Popen(["python", script_path, person_name], shell=True)
+        return jsonify({"message": f"📸 Collecting New Samples for {person_name}!"})
 
     except Exception as e:
         return jsonify({"error": str(e)})
+
 
 # -------------------- (5) Train Model --------------------
 @app.route("/train_model")
@@ -80,7 +86,7 @@ def train_model():
         return jsonify({"error": "❌ Access Denied!"})
 
     try:
-        subprocess.Popen(["python", "dev/train_model.py"], shell=True)
+        subprocess.Popen(["python", "train_model.py"], shell=True)
         return jsonify({"message": "🤖 Training Model Started!"})
     except Exception as e:
         return jsonify({"error": str(e)})
@@ -92,18 +98,61 @@ def view_attendance():
         return redirect(url_for("login"))
 
     try:
-        conn = sqlite3.connect("database/attendance.db")  # Ensure the correct path
+        conn = sqlite3.connect("database/attendance.db")
         cursor = conn.cursor()
-
-        # Fetching attendance records
         cursor.execute("SELECT id, name, date, time FROM attendance ORDER BY date DESC, time DESC")
         attendance_records = cursor.fetchall()
         conn.close()
 
-        return jsonify({"message": "📊 Viewing Attendance!", "data": attendance_records})
+        return render_template("dashboard.html", user=session["username"], attendance=attendance_records)
 
     except Exception as e:
         return jsonify({"error": str(e)})
+
+
+# -------------------- (Admin Adds Person) --------------------
+@app.route("/add_person", methods=["POST"])
+def add_person():
+    if "username" not in session or session["username"] != "admin":
+        return jsonify({"error": "❌ Access Denied!"})
+
+    new_person = request.form.get("new_person")
+
+    if not new_person:
+        return jsonify({"error": "❌ Name is required!"})
+
+    try:
+        os.makedirs(os.path.join("dataset", new_person), exist_ok=True)
+        return redirect(url_for("dashboard"))
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+
+# -------------------- (Admin Removes Person) --------------------
+@app.route("/remove_person", methods=["POST"])
+def remove_person():
+    if "username" not in session or session["username"] != "admin":
+        return jsonify({"error": "❌ Access Denied!"})
+
+    remove_person = request.form.get("remove_person")
+
+    if not remove_person:
+        return jsonify({"error": "❌ Name is required!"})
+
+    try:
+        person_path = os.path.join("dataset", remove_person)
+
+        if os.path.exists(person_path):
+            import shutil
+            shutil.rmtree(person_path)
+            return redirect(url_for("dashboard"))
+        else:
+            return jsonify({"error": "❌ Person not found!"})
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
 
 # -------------------- (7) Logout --------------------
 @app.route("/logout")
