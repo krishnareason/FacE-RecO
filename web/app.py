@@ -3,6 +3,8 @@ import subprocess
 import os
 import sqlite3
 import sys
+import csv
+
 sys.stdout.reconfigure(encoding='utf-8')
 
 app = Flask(__name__)
@@ -152,6 +154,21 @@ def remove_person():
 
     except Exception as e:
         return jsonify({"error": str(e)})
+
+# -------------------- (Admin watches logs) -------------------- 
+# Route to display logs
+@app.route("/logs")
+def show_logs():
+    logs = []
+    try:
+        with open("logs.csv", "r") as file:
+            reader = csv.reader(file)
+            logs = list(reader)  # Convert CSV rows to list
+    except FileNotFoundError:
+        logs = [["No Logs Found"]]
+
+    return render_template("logs.html", logs=logs)
+  
 
 
 # -------------------- (7) Logout --------------------

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Logs</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* 🔥 Red-Purple Gradient Background */
+        body {
+            background: linear-gradient(to right, #8e0e00, #1f1c18);
+            color: white;
+            padding: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>📜 System Logs</h2>
+    <table border="1">
+        <tr>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Event Type</th>
+            <th>Message</th>
+        </tr>
+        {% for log in logs %}
+        <tr>
+            {% for entry in log %}
+            <td>{{ entry }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+
+    <br>
+    <a href="/dashboard"><button class="btn">🔙 Back to Dashboard</button></a>
+
+</body>
+
+</html>
